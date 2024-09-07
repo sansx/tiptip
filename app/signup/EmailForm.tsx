@@ -1,81 +1,72 @@
-import { useState, useEffect } from 'react'
-import { useUser } from '@/lib/UserContext'
-import { useDebounce } from 'react-use'
+import { useState } from "react";
 
 interface EmailFormProps {
-  onSubmit: () => void
+  onSubmit: (email: string) => void;
+  isLoading: boolean;
 }
 
-export default function EmailForm({ onSubmit }: EmailFormProps) {
-  const [isValidEmail, setIsValidEmail] = useState(false)
-  const [error, setError] = useState('')
-  const { email, setEmail } = useUser()
-  const [debouncedEmail, setDebouncedEmail] = useState(email)
-
-  const validateEmail = (email: string) => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    return re.test(String(email).toLowerCase())
-  }
-
-  useDebounce(
-    () => {
-      const isValid = validateEmail(debouncedEmail)
-      setIsValidEmail(isValid)
-      if (!isValid && debouncedEmail !== '') {
-        setError('Please enter a valid email address')
-      } else {
-        setError('')
-      }
-    },
-    300,
-    [debouncedEmail]
-  )
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newEmail = e.target.value
-    setEmail(newEmail)
-    setDebouncedEmail(newEmail)
-  }
+export default function EmailForm({ onSubmit, isLoading }: EmailFormProps) {
+  const [email, setEmail] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (isValidEmail) {
-      onSubmit()
-    } else {
-      setError('Please enter a valid email address')
-    }
-  }
+    e.preventDefault();
+    onSubmit(email);
+  };
 
-  useEffect(() => {
-    if (email) {
-      setDebouncedEmail(email)
-    }
-  }, [email])
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <input
         type="email"
         value={email}
         onChange={handleEmailChange}
-        placeholder="Enter email"
-        className={`w-full px-3 py-2 border rounded-md mb-2 ${
-          error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-        } bg-white dark:bg-gray-800 text-black dark:text-white`}
+        placeholder="Enter your email"
+        className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-black dark:text-white"
         required
+        disabled={isLoading}
       />
-      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
       <button
         type="submit"
-        className={`w-full px-4 py-2 rounded-md transition-colors ${
-          isValidEmail
-            ? 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
-            : 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed'
-        }`}
-        disabled={!isValidEmail}
+        className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors theme-transition flex items-center justify-center"
+        disabled={isLoading}
       >
-        Send Verification Email
+        {isLoading ? (
+          <>
+            <LoadingIcon />
+            <span className="ml-2">Sending...</span>
+          </>
+        ) : (
+          "Submit"
+        )}
       </button>
     </form>
-  )
+  );
+}
+
+function LoadingIcon() {
+  return (
+    <svg
+      className="animate-spin h-5 w-5 text-white"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
+    </svg>
+  );
 }

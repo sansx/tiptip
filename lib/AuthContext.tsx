@@ -2,20 +2,26 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 
-type AuthenticationStatus = 'loading' | 'authenticated' | 'unauthenticated'
+interface User {
+  username: string
+  address: string
+}
 
 interface AuthContextType {
-  authenticationStatus: AuthenticationStatus
-  setAuthenticationStatus: (status: AuthenticationStatus) => void
+  user: User | null
+  setUser: (user: User | null) => void
+  authenticationStatus: 'authenticated' | 'unauthenticated' | 'loading'
+  setAuthenticationStatus: (status: 'authenticated' | 'unauthenticated' | 'loading') => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authenticationStatus, setAuthenticationStatus] = useState<AuthenticationStatus>('unauthenticated')
+  const [user, setUser] = useState<User | null>(null)
+  const [authenticationStatus, setAuthenticationStatus] = useState<'authenticated' | 'unauthenticated' | 'loading'>('unauthenticated')
 
   return (
-    <AuthContext.Provider value={{ authenticationStatus, setAuthenticationStatus }}>
+    <AuthContext.Provider value={{ user, setUser, authenticationStatus, setAuthenticationStatus }}>
       {children}
     </AuthContext.Provider>
   )

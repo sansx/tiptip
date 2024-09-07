@@ -3,17 +3,21 @@ import { useUser } from '@/lib/UserContext'
 import { useDebounce } from 'react-use'
 
 interface UsernameFormProps {
-  onSubmit: () => void
+  onSubmit: (username: string) => void
 }
 
 export default function UsernameForm({ onSubmit }: UsernameFormProps) {
-  const [isAvailable, setIsAvailable] = useState(true)
+  const [isAvailable, setIsAvailable] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
   const { username, setUsername } = useUser()
-  const [debouncedUsername, setDebouncedUsername] = useState(username)
+  const [localUsername, setLocalUsername] = useState(username ?? '')
+  const [debouncedUsername, setDebouncedUsername] = useState(localUsername)
 
   const checkUsername = async (username: string) => {
-    if (username.length < 3) return
+    if (username.length < 3) {
+      setIsAvailable(false)
+      return
+    }
     setIsChecking(true)
     try {
       const response = await fetch('/api/check-username', {
@@ -33,9 +37,7 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
 
   useDebounce(
     () => {
-      if (debouncedUsername.length >= 3) {
-        checkUsername(debouncedUsername)
-      }
+      checkUsername(debouncedUsername)
     },
     300,
     [debouncedUsername]
@@ -43,38 +45,41 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newUsername = e.target.value
-    setUsername(newUsername)
+    setLocalUsername(newUsername)
     setDebouncedUsername(newUsername)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (isAvailable && username.length >= 3) {
-      onSubmit()
+    if (isAvailable && localUsername.length >= 3) {
+      onSubmit(localUsername)
     }
   }
 
   useEffect(() => {
     if (username) {
+      setLocalUsername(username)
       setDebouncedUsername(username)
     }
   }, [username])
+
+  const isButtonEnabled = isAvailable && localUsername.length >= 3 && !isChecking
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <input
         type="text"
-        value={username}
+        value={localUsername}
         onChange={handleUsernameChange}
         placeholder="Enter username"
         className={`w-full px-3 py-2 border rounded-md mb-2 ${
-          !isAvailable ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+          !isAvailable && localUsername.length >= 3 ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
         } bg-white dark:bg-gray-800 text-black dark:text-white theme-transition`}
         minLength={3}
         required
       />
       {isChecking && <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">Checking availability...</p>}
-      {!isChecking && username.length >= 3 && (
+      {!isChecking && localUsername.length >= 3 && (
         <p className={`text-sm mb-2 ${isAvailable ? 'text-green-500' : 'text-red-500'}`}>
           {isAvailable ? 'Username is available' : 'Username is taken'}
         </p>
@@ -82,11 +87,11 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
       <button
         type="submit"
         className={`w-full px-4 py-2 rounded-md transition-colors ${
-          isAvailable && username.length >= 3
+          isButtonEnabled
             ? 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
             : 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed'
         } theme-transition`}
-        disabled={!isAvailable || username.length < 3}
+        disabled={!isButtonEnabled}
       >
         Next
       </button>

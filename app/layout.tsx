@@ -3,9 +3,10 @@ import "../styles/global.css";
 
 import { Providers } from "./providers";
 import { UserProvider } from "@/lib/UserContext";
-import { AuthProvider } from "@/lib/AuthContext";
 import { ThemeProvider } from './components/ThemeProvider';
 import { ThemeToggle } from './components/ThemeToggle';
+import TokenVerifier from './components/TokenVerifier';
+import { AuthProvider } from '@/lib/AuthContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Providers>
               <UserProvider>
                 <ThemeToggle />
+                <TokenVerifier />
                 {children}
               </UserProvider>
             </Providers>
@@ -23,5 +25,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

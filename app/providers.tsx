@@ -77,14 +77,14 @@ export function Providers({
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         {/* <SessionProvider refetchInterval={0}> */}
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitAuthenticationProvider
-              adapter={authenticationAdapter}
-              status={authenticationStatus}
-            >
-              <RainbowKitProvider>{children}</RainbowKitProvider>
-            </RainbowKitAuthenticationProvider>
-          </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitAuthenticationProvider
+            adapter={authenticationAdapter}
+            status={authenticationStatus}
+          >
+            <RainbowKitProvider>{children}</RainbowKitProvider>
+          </RainbowKitAuthenticationProvider>
+        </QueryClientProvider>
         {/* </SessionProvider> */}
       </QueryClientProvider>
     </WagmiProvider>
